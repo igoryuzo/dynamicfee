@@ -84,9 +84,9 @@ export const ADDRESSES = {
     dynamicFee: '0x0000000000000000000000000000000000000000' as `0x${string}`,
     poolManager: '0x7Da1D65F8B249183667cdE74C5CBD46dD38AA829' as `0x${string}`,
   },
-  // Base Mainnet - TODO: Update after deployment
+  // Base Mainnet - deployed
   8453: {
-    dynamicFee: '0x0000000000000000000000000000000000000000' as `0x${string}`,
+    dynamicFee: '0xABf204889FE7fB23EC60d1eb3EB5335f531A0080' as `0x${string}`,
     poolManager: '0x498581fF718922c3f8e6A244956aF099B2652b2b' as `0x${string}`,
   },
 } as const

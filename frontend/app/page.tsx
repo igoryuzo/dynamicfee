@@ -14,7 +14,7 @@ const POOL_KEY = {
   currency1: '0x4200000000000000000000000000000000000006' as `0x${string}`, // WETH
   fee: 0x800000, // DYNAMIC_FEE_FLAG (0x800000)
   tickSpacing: 60,
-  hooks: '0x0000000000000000000000000000000000000000' as `0x${string}`, // TODO: Update after deployment
+  hooks: '0xABf204889FE7fB23EC60d1eb3EB5335f531A0080' as `0x${string}`,
 }
 
 // Official Uniswap V4 contracts on Base

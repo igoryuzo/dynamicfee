@@ -11,8 +11,8 @@ import {DynamicFee} from "../src/DynamicFee.sol";
 
 /// @notice Execute test swaps at different sizes to verify dynamic fee
 contract SwapScript is BaseScript {
-    // Hook address - UPDATE THIS after deployment
-    IHooks dynamicFeeHook = IHooks(address(0)); // TODO: Set after running 00_DeployHook
+    // Hook address - deployed on Base Mainnet
+    IHooks dynamicFeeHook = IHooks(0xABf204889FE7fB23EC60d1eb3EB5335f531A0080);
 
     function run() external {
         require(address(dynamicFeeHook) != address(0), "Set dynamicFeeHook address first!");

@@ -25,8 +25,8 @@ contract CreatePoolScript is BaseScript, LiquidityHelpers {
     uint24 lpFee = LPFeeLibrary.DYNAMIC_FEE_FLAG;
     int24 tickSpacing = 60; // Standard tick spacing
 
-    // Hook address - UPDATE THIS after deployment
-    IHooks dynamicFeeHook = IHooks(address(0)); // TODO: Set after running 00_DeployHook
+    // Hook address - deployed on Base Mainnet
+    IHooks dynamicFeeHook = IHooks(0xABf204889FE7fB23EC60d1eb3EB5335f531A0080);
 
     // --- liquidity position configuration --- //
     // Pool: CLANKER (token0) / WETH (token1)
