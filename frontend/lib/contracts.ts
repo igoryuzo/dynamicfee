@@ -18,7 +18,14 @@ export const DYNAMICFEE_ABI = [
   },
   {
     type: 'function',
-    name: 'BASE_FEE',
+    name: 'MICRO_FEE',
+    inputs: [],
+    outputs: [{ type: 'uint24' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    name: 'SMALL_FEE',
     inputs: [],
     outputs: [{ type: 'uint24' }],
     stateMutability: 'view',
@@ -32,14 +39,7 @@ export const DYNAMICFEE_ABI = [
   },
   {
     type: 'function',
-    name: 'HIGH_FEE',
-    inputs: [],
-    outputs: [{ type: 'uint24' }],
-    stateMutability: 'view',
-  },
-  {
-    type: 'function',
-    name: 'MAX_FEE',
+    name: 'LARGE_FEE',
     inputs: [],
     outputs: [{ type: 'uint24' }],
     stateMutability: 'view',
@@ -93,10 +93,11 @@ export const ADDRESSES = {
 
 export type SupportedChainId = keyof typeof ADDRESSES
 
-// Fee tier configuration (matches contract) - optimized for micro-swaps
+// Fee tier configuration (matches contract) - volume discount model
+// Larger swaps get LOWER fees (rewards volume)
 export const FEE_TIERS = {
-  BASE: { fee: 100, percent: '0.01%', label: 'Micro', threshold: 0 },
-  MEDIUM: { fee: 500, percent: '0.05%', label: 'Small', threshold: 0.0001 },
-  HIGH: { fee: 1000, percent: '0.10%', label: 'Medium', threshold: 0.001 },
-  MAX: { fee: 3000, percent: '0.30%', label: 'Large', threshold: 0.005 },
+  MICRO: { fee: 3000, percent: '0.30%', label: 'Micro', threshold: 0 },
+  SMALL: { fee: 1000, percent: '0.10%', label: 'Small', threshold: 0.0001 },
+  MEDIUM: { fee: 500, percent: '0.05%', label: 'Medium', threshold: 0.001 },
+  LARGE: { fee: 100, percent: '0.01%', label: 'Large', threshold: 0.005 },
 } as const

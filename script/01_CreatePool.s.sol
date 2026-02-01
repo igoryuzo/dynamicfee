@@ -32,24 +32,24 @@ contract CreatePoolScript is BaseScript, LiquidityHelpers {
     // Pool: CLANKER (token0) / WETH (token1)
     // Educational pool with ~$25 each side
     //
-    // NOTE: Update these values based on current market prices!
-    // To calculate sqrtPriceX96:
-    //   1. Get price ratio: price = token1/token0 = WETH_per_CLANKER
-    //   2. If 1 CLANKER = 0.000004 WETH, then price = 0.000004
-    //   3. sqrtPriceX96 = sqrt(price) * 2^96
+    // Current market (Feb 2025):
+    //   - CLANKER = $37.80
+    //   - 1 CLANKER = 0.01597 WETH
+    //   - ETH = ~$2400
     //
-    // Example: If CLANKER = $0.01 and WETH = $2500:
-    //   - 1 CLANKER = 0.000004 WETH (0.01 / 2500)
-    //   - sqrt(0.000004) = 0.002
-    //   - sqrtPriceX96 = 0.002 * 2^96 = 158,456,325,028,528,675,187,087
+    // For $25 each side:
+    //   - $25 / $37.80 = ~0.66 CLANKER
+    //   - $25 / $2400 = ~0.0104 WETH
     //
-    uint256 public token0Amount = 2500e18;      // CLANKER (~$25 at $0.01/CLANKER)
-    uint256 public token1Amount = 0.01 ether;   // WETH (~$25 at $2500/ETH)
+    // sqrtPriceX96 = sqrt(0.01597) * 2^96 = 10,010,090,053,621,991,236,927,311,617
+    //
+    uint256 public token0Amount = 0.66 ether;   // ~0.66 CLANKER (~$25 at $37.80/CLANKER)
+    uint256 public token1Amount = 0.0104 ether; // ~0.0104 WETH (~$25 at $2400/ETH)
 
     // Starting price: sqrtPriceX96 for CLANKER/WETH
-    // Assuming 1 CLANKER = 0.000004 WETH ($0.01 / $2500)
-    // sqrt(0.000004) * 2^96 = 158,456,325,028,528,675,187,087
-    uint160 startingPrice = 158456325028528675187087;
+    // 1 CLANKER = 0.01597 WETH
+    // sqrt(0.01597) * 2^96 = 10,010,090,053,621,991,236,927,311,617
+    uint160 startingPrice = 10010090053621991236927311617;
 
     // range of the position
     int24 tickLower;

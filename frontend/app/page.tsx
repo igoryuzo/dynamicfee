@@ -187,12 +187,12 @@ function encodeV4Swap(
   }
 }
 
-// Calculate fee tier based on amount
+// Calculate fee tier based on amount (volume discount - larger swaps get lower fees)
 function getFeeTier(amountEth: number): typeof FEE_TIERS[keyof typeof FEE_TIERS] {
-  if (amountEth >= FEE_TIERS.MAX.threshold) return FEE_TIERS.MAX
-  if (amountEth >= FEE_TIERS.HIGH.threshold) return FEE_TIERS.HIGH
-  if (amountEth >= FEE_TIERS.MEDIUM.threshold) return FEE_TIERS.MEDIUM
-  return FEE_TIERS.BASE
+  if (amountEth >= FEE_TIERS.LARGE.threshold) return FEE_TIERS.LARGE   // 0.01% - best rate
+  if (amountEth >= FEE_TIERS.MEDIUM.threshold) return FEE_TIERS.MEDIUM // 0.05%
+  if (amountEth >= FEE_TIERS.SMALL.threshold) return FEE_TIERS.SMALL   // 0.10%
+  return FEE_TIERS.MICRO                                                // 0.30% - highest
 }
 
 export default function Home() {
