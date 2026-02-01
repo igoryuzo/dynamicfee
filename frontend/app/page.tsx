@@ -508,9 +508,7 @@ export default function Home() {
                       </div>
                       <div className="text-xs text-dim font-mono mt-1">
                         {tier.threshold === 0
-                          ? '< 0.01 ETH'
-                          : tier.threshold === 1
-                          ? '> 1 ETH'
+                          ? '< 0.0001 ETH'
                           : `≥ ${tier.threshold} ETH`}
                       </div>
                     </div>
