@@ -93,10 +93,10 @@ export const ADDRESSES = {
 
 export type SupportedChainId = keyof typeof ADDRESSES
 
-// Fee tier configuration (matches contract)
+// Fee tier configuration (matches contract) - optimized for micro-swaps
 export const FEE_TIERS = {
-  BASE: { fee: 500, percent: '0.05%', label: 'Base', threshold: 0 },
-  MEDIUM: { fee: 1000, percent: '0.10%', label: 'Medium', threshold: 0.01 },
-  HIGH: { fee: 3000, percent: '0.30%', label: 'High', threshold: 0.1 },
-  MAX: { fee: 5000, percent: '0.50%', label: 'Max', threshold: 1 },
+  BASE: { fee: 100, percent: '0.01%', label: 'Micro', threshold: 0 },
+  MEDIUM: { fee: 500, percent: '0.05%', label: 'Small', threshold: 0.0001 },
+  HIGH: { fee: 1000, percent: '0.10%', label: 'Medium', threshold: 0.001 },
+  MAX: { fee: 3000, percent: '0.30%', label: 'Large', threshold: 0.005 },
 } as const

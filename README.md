@@ -4,14 +4,16 @@ A Uniswap V4 hook that dynamically adjusts LP fees based on swap size. Part of [
 
 ## Overview
 
-This hook demonstrates the **beforeSwap** lifecycle with fee override capability. Larger swaps pay proportionally higher fees:
+This hook demonstrates the **beforeSwap** lifecycle with fee override capability. Optimized for micro-swaps in educational pools with limited liquidity (~$50).
 
-| Swap Size | Fee |
-|-----------|-----|
-| < 0.01 ETH | 0.05% |
-| 0.01 - 0.1 ETH | 0.10% |
-| 0.1 - 1 ETH | 0.30% |
-| > 1 ETH | 0.50% |
+**Token Pair:** CLANKER / WETH on Base Mainnet
+
+| Swap Size | Fee | Tier |
+|-----------|-----|------|
+| < 0.0001 ETH | 0.01% | Micro |
+| 0.0001 - 0.001 ETH | 0.05% | Small |
+| 0.001 - 0.005 ETH | 0.10% | Medium |
+| > 0.005 ETH | 0.30% | Large |
 
 ## How It Works
 
@@ -114,11 +116,16 @@ npm run build
 
 ```solidity
 contract DynamicFee is BaseHook {
-    // Fee tiers
-    uint24 public constant BASE_FEE = 500;      // 0.05%
-    uint24 public constant MEDIUM_FEE = 1000;   // 0.10%
-    uint24 public constant HIGH_FEE = 3000;     // 0.30%
-    uint24 public constant MAX_FEE = 5000;      // 0.50%
+    // Fee tiers - optimized for micro-swaps
+    uint24 public constant BASE_FEE = 100;      // 0.01%
+    uint24 public constant MEDIUM_FEE = 500;    // 0.05%
+    uint24 public constant HIGH_FEE = 1000;     // 0.10%
+    uint24 public constant MAX_FEE = 3000;      // 0.30%
+
+    // Thresholds for micro-swaps
+    uint256 public constant SMALL_THRESHOLD = 0.0001 ether;
+    uint256 public constant MEDIUM_THRESHOLD = 0.001 ether;
+    uint256 public constant LARGE_THRESHOLD = 0.005 ether;
 
     function _beforeSwap(...) internal override returns (bytes4, BeforeSwapDelta, uint24) {
         uint256 swapSize = _abs(params.amountSpecified);

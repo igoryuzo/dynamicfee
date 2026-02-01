@@ -13,22 +13,23 @@ import {LPFeeLibrary} from "@uniswap/v4-core/src/libraries/LPFeeLibrary.sol";
 /// @title DynamicFee Hook
 /// @notice A Uniswap V4 hook that dynamically adjusts LP fees based on swap size
 /// @dev Demonstrates beforeSwap hook with fee override capability
-/// @dev Larger swaps pay proportionally higher fees (0.05% -> 0.50%)
+/// @dev Optimized for micro-swaps in educational pools with limited liquidity
+/// @dev Larger swaps pay proportionally higher fees (0.01% -> 0.30%)
 contract DynamicFee is BaseHook {
     using PoolIdLibrary for PoolKey;
 
-    // Fee tiers (in hundredths of a bip, so 500 = 0.05%)
-    // 1 bip = 0.01%, so 100 = 1 bip = 0.01%
-    uint24 public constant BASE_FEE = 500;      // 0.05%
-    uint24 public constant MEDIUM_FEE = 1000;   // 0.10%
-    uint24 public constant HIGH_FEE = 3000;     // 0.30%
-    uint24 public constant MAX_FEE = 5000;      // 0.50%
+    // Fee tiers (in hundredths of a bip, so 100 = 0.01%)
+    // Optimized for micro-swaps in educational LPs (~$50 liquidity)
+    uint24 public constant BASE_FEE = 100;      // 0.01% - very low for micro swaps
+    uint24 public constant MEDIUM_FEE = 500;    // 0.05%
+    uint24 public constant HIGH_FEE = 1000;     // 0.10%
+    uint24 public constant MAX_FEE = 3000;      // 0.30%
 
-    // Size thresholds (in wei)
-    uint256 public constant SMALL_THRESHOLD = 0.01 ether;   // < 0.01 ETH: base fee
-    uint256 public constant MEDIUM_THRESHOLD = 0.1 ether;   // 0.01-0.1 ETH: medium fee
-    uint256 public constant LARGE_THRESHOLD = 1 ether;      // 0.1-1 ETH: high fee
-    // > 1 ETH: max fee
+    // Size thresholds (in wei) - optimized for micro-swaps
+    uint256 public constant SMALL_THRESHOLD = 0.0001 ether;   // < 0.0001 ETH (~$0.25): base fee
+    uint256 public constant MEDIUM_THRESHOLD = 0.001 ether;   // 0.0001-0.001 ETH: medium fee
+    uint256 public constant LARGE_THRESHOLD = 0.005 ether;    // 0.001-0.005 ETH: high fee
+    // > 0.005 ETH (~$12.50): max fee
 
     /// @notice Emitted when a swap occurs with dynamic fee
     event DynamicFeeApplied(
@@ -93,10 +94,10 @@ contract DynamicFee is BaseHook {
     /// @param size The absolute amount being swapped (in wei)
     /// @return fee The fee to apply (in hundredths of a bip)
     function _calculateFee(uint256 size) internal pure returns (uint24) {
-        if (size < SMALL_THRESHOLD) return BASE_FEE;      // < 0.01 ETH: 0.05%
-        if (size < MEDIUM_THRESHOLD) return MEDIUM_FEE;   // 0.01-0.1 ETH: 0.10%
-        if (size < LARGE_THRESHOLD) return HIGH_FEE;      // 0.1-1 ETH: 0.30%
-        return MAX_FEE;                                    // > 1 ETH: 0.50%
+        if (size < SMALL_THRESHOLD) return BASE_FEE;      // < 0.0001 ETH: 0.01%
+        if (size < MEDIUM_THRESHOLD) return MEDIUM_FEE;   // 0.0001-0.001 ETH: 0.05%
+        if (size < LARGE_THRESHOLD) return HIGH_FEE;      // 0.001-0.005 ETH: 0.10%
+        return MAX_FEE;                                    // > 0.005 ETH: 0.30%
     }
 
     /// @notice Public view function to get fee for a given swap size

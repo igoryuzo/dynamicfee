@@ -29,16 +29,27 @@ contract CreatePoolScript is BaseScript, LiquidityHelpers {
     IHooks dynamicFeeHook = IHooks(address(0)); // TODO: Set after running 00_DeployHook
 
     // --- liquidity position configuration --- //
-    // Current market price: 1 WETH = 3,098,610 MOLT
-    // For ~$10 each side:
-    uint256 public token0Amount = 0.004 ether;  // WETH (~$10)
-    uint256 public token1Amount = 12395e18;     // MOLT (~$10 at market price)
+    // Pool: CLANKER (token0) / WETH (token1)
+    // Educational pool with ~$25 each side
+    //
+    // NOTE: Update these values based on current market prices!
+    // To calculate sqrtPriceX96:
+    //   1. Get price ratio: price = token1/token0 = WETH_per_CLANKER
+    //   2. If 1 CLANKER = 0.000004 WETH, then price = 0.000004
+    //   3. sqrtPriceX96 = sqrt(price) * 2^96
+    //
+    // Example: If CLANKER = $0.01 and WETH = $2500:
+    //   - 1 CLANKER = 0.000004 WETH (0.01 / 2500)
+    //   - sqrt(0.000004) = 0.002
+    //   - sqrtPriceX96 = 0.002 * 2^96 = 158,456,325,028,528,675,187,087
+    //
+    uint256 public token0Amount = 2500e18;      // CLANKER (~$25 at $0.01/CLANKER)
+    uint256 public token1Amount = 0.01 ether;   // WETH (~$25 at $2500/ETH)
 
-    // Starting price: sqrtPriceX96 = sqrt(price) * 2^96
-    // price = MOLT/WETH = 3,098,610
-    // sqrt(3,098,610) = 1760.2869
-    // sqrtPriceX96 = 1760.2869 * 2^96 = 139,458,766,000,000,000,000,000,000,000,000
-    uint160 startingPrice = 139458766000000000000000000000000;
+    // Starting price: sqrtPriceX96 for CLANKER/WETH
+    // Assuming 1 CLANKER = 0.000004 WETH ($0.01 / $2500)
+    // sqrt(0.000004) * 2^96 = 158,456,325,028,528,675,187,087
+    uint160 startingPrice = 158456325028528675187087;
 
     // range of the position
     int24 tickLower;

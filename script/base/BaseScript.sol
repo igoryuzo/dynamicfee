@@ -22,9 +22,10 @@ contract BaseScript is Script, Deployers {
     /////////////////////////////////////
     // --- Configure These ---
     /////////////////////////////////////
-    // Base Mainnet: WETH (currency0) and MOLT (currency1)
-    IERC20 internal constant token0 = IERC20(0x4200000000000000000000000000000000000006); // WETH
-    IERC20 internal constant token1 = IERC20(0xB695559b26BB2c9703ef1935c37AeaE9526bab07); // MOLT
+    // Base Mainnet: CLANKER (currency0) and WETH (currency1)
+    // Note: CLANKER < WETH by address, so CLANKER is currency0
+    IERC20 internal constant token0 = IERC20(0x1bc0c42215582d5A085795f4baDbaC3ff36d1Bcb); // CLANKER
+    IERC20 internal constant token1 = IERC20(0x4200000000000000000000000000000000000006); // WETH
     IHooks constant hookContract = IHooks(address(0)); // Will be set after deployment
     /////////////////////////////////////
 

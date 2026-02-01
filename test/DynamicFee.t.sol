@@ -77,49 +77,49 @@ contract DynamicFeeTest is BaseTest {
     }
 
     function test_GetFeeForSize_SmallSwap() public view {
-        // < 0.01 ETH should get BASE_FEE (0.05%)
-        uint24 fee = hook.getFeeForSize(0.005 ether);
+        // < 0.0001 ETH should get BASE_FEE (0.01%)
+        uint24 fee = hook.getFeeForSize(0.00005 ether);
         assertEq(fee, hook.BASE_FEE());
-        assertEq(fee, 500); // 0.05%
+        assertEq(fee, 100); // 0.01%
     }
 
     function test_GetFeeForSize_MediumSwap() public view {
-        // 0.01-0.1 ETH should get MEDIUM_FEE (0.10%)
-        uint24 fee = hook.getFeeForSize(0.05 ether);
+        // 0.0001-0.001 ETH should get MEDIUM_FEE (0.05%)
+        uint24 fee = hook.getFeeForSize(0.0005 ether);
         assertEq(fee, hook.MEDIUM_FEE());
-        assertEq(fee, 1000); // 0.10%
+        assertEq(fee, 500); // 0.05%
     }
 
     function test_GetFeeForSize_HighSwap() public view {
-        // 0.1-1 ETH should get HIGH_FEE (0.30%)
-        uint24 fee = hook.getFeeForSize(0.5 ether);
+        // 0.001-0.005 ETH should get HIGH_FEE (0.10%)
+        uint24 fee = hook.getFeeForSize(0.003 ether);
         assertEq(fee, hook.HIGH_FEE());
-        assertEq(fee, 3000); // 0.30%
+        assertEq(fee, 1000); // 0.10%
     }
 
     function test_GetFeeForSize_MaxSwap() public view {
-        // > 1 ETH should get MAX_FEE (0.50%)
-        uint24 fee = hook.getFeeForSize(2 ether);
+        // > 0.005 ETH should get MAX_FEE (0.30%)
+        uint24 fee = hook.getFeeForSize(0.01 ether);
         assertEq(fee, hook.MAX_FEE());
-        assertEq(fee, 5000); // 0.50%
+        assertEq(fee, 3000); // 0.30%
     }
 
     function test_GetFeeTiers() public view {
         (uint24[4] memory fees, uint256[3] memory thresholds) = hook.getFeeTiers();
 
-        assertEq(fees[0], 500);   // BASE_FEE
-        assertEq(fees[1], 1000);  // MEDIUM_FEE
-        assertEq(fees[2], 3000);  // HIGH_FEE
-        assertEq(fees[3], 5000);  // MAX_FEE
+        assertEq(fees[0], 100);   // BASE_FEE (0.01%)
+        assertEq(fees[1], 500);   // MEDIUM_FEE (0.05%)
+        assertEq(fees[2], 1000);  // HIGH_FEE (0.10%)
+        assertEq(fees[3], 3000);  // MAX_FEE (0.30%)
 
-        assertEq(thresholds[0], 0.01 ether);  // SMALL_THRESHOLD
-        assertEq(thresholds[1], 0.1 ether);   // MEDIUM_THRESHOLD
-        assertEq(thresholds[2], 1 ether);     // LARGE_THRESHOLD
+        assertEq(thresholds[0], 0.0001 ether);  // SMALL_THRESHOLD
+        assertEq(thresholds[1], 0.001 ether);   // MEDIUM_THRESHOLD
+        assertEq(thresholds[2], 0.005 ether);   // LARGE_THRESHOLD
     }
 
-    function test_SmallSwap_AppliesBaseFee() public {
-        // Swap a small amount (< 0.01 ETH)
-        uint256 amountIn = 0.005 ether;
+    function test_MicroSwap_AppliesBaseFee() public {
+        // Swap a micro amount (< 0.0001 ETH)
+        uint256 amountIn = 0.00005 ether;
 
         // Execute swap
         swapRouter.swapExactTokensForTokens({
@@ -136,9 +136,9 @@ contract DynamicFeeTest is BaseTest {
         // The fact that it succeeds means the dynamic fee was properly applied
     }
 
-    function test_LargeSwap_AppliesHigherFee() public {
-        // Swap a larger amount (0.1-1 ETH)
-        uint256 amountIn = 0.5 ether;
+    function test_SmallSwap_AppliesMediumFee() public {
+        // Swap a small amount (0.0001-0.001 ETH)
+        uint256 amountIn = 0.0005 ether;
 
         // Execute swap
         swapRouter.swapExactTokensForTokens({
@@ -151,12 +151,30 @@ contract DynamicFeeTest is BaseTest {
             deadline: block.timestamp + 1
         });
 
-        // Swap should succeed with higher fee applied
+        // Swap should succeed with medium fee applied
     }
 
-    function test_VeryLargeSwap_AppliesMaxFee() public {
-        // Swap a very large amount (> 1 ETH)
-        uint256 amountIn = 2 ether;
+    function test_MediumSwap_AppliesHighFee() public {
+        // Swap a medium amount (0.001-0.005 ETH)
+        uint256 amountIn = 0.003 ether;
+
+        // Execute swap
+        swapRouter.swapExactTokensForTokens({
+            amountIn: amountIn,
+            amountOutMin: 0,
+            zeroForOne: true,
+            poolKey: poolKey,
+            hookData: Constants.ZERO_BYTES,
+            receiver: address(this),
+            deadline: block.timestamp + 1
+        });
+
+        // Swap should succeed with high fee applied
+    }
+
+    function test_LargeSwap_AppliesMaxFee() public {
+        // Swap a larger amount (> 0.005 ETH)
+        uint256 amountIn = 0.01 ether;
 
         // Execute swap
         swapRouter.swapExactTokensForTokens({
@@ -173,11 +191,11 @@ contract DynamicFeeTest is BaseTest {
     }
 
     function test_DynamicFeeApplied_EventEmitted() public {
-        uint256 amountIn = 0.05 ether;
+        uint256 amountIn = 0.0005 ether;
 
         // We expect the DynamicFeeApplied event to be emitted
         vm.expectEmit(true, false, false, false);
-        emit DynamicFee.DynamicFeeApplied(poolId, amountIn, 1000, block.timestamp);
+        emit DynamicFee.DynamicFeeApplied(poolId, amountIn, 500, block.timestamp);
 
         swapRouter.swapExactTokensForTokens({
             amountIn: amountIn,

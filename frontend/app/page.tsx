@@ -7,11 +7,11 @@ import { formatEther, parseEther, maxUint256, encodeAbiParameters, toHex, keccak
 import { DYNAMICFEE_ABI, ADDRESSES, FEE_TIERS } from '@/lib/contracts'
 import { ConnectButton } from '@/components/ConnectButton'
 
-// Pre-configured pool - WETH/MOLT on Base Mainnet
-// NOTE: Update these after deployment
+// Pre-configured pool - CLANKER/WETH on Base Mainnet
+// NOTE: Update hook address after deployment
 const POOL_KEY = {
-  currency0: '0x4200000000000000000000000000000000000006' as `0x${string}`, // WETH
-  currency1: '0xB695559b26BB2c9703ef1935c37AeaE9526bab07' as `0x${string}`, // MOLT
+  currency0: '0x1bc0c42215582d5A085795f4baDbaC3ff36d1Bcb' as `0x${string}`, // CLANKER (lower address = currency0)
+  currency1: '0x4200000000000000000000000000000000000006' as `0x${string}`, // WETH
   fee: 0x800000, // DYNAMIC_FEE_FLAG (0x800000)
   tickSpacing: 60,
   hooks: '0x0000000000000000000000000000000000000000' as `0x${string}`, // TODO: Update after deployment
@@ -204,8 +204,8 @@ export default function Home() {
     txHash: string
     logIndex: number
   }>>([])
-  const [swapDirection, setSwapDirection] = useState<'wethToMolt' | 'moltToWeth'>('wethToMolt')
-  const [swapAmount, setSwapAmount] = useState('0.01')
+  const [swapDirection, setSwapDirection] = useState<'clankerToWeth' | 'wethToClanker'>('clankerToWeth')
+  const [swapAmount, setSwapAmount] = useState('0.0001')
   const [swapStep, setSwapStep] = useState<'idle' | 'approving' | 'swapping' | 'success' | 'error'>('idle')
   const [errorMessage, setErrorMessage] = useState('')
 
@@ -219,7 +219,7 @@ export default function Home() {
   }, [swapAmount])
 
   // Check allowances
-  const inputToken = swapDirection === 'wethToMolt' ? POOL_KEY.currency0 : POOL_KEY.currency1
+  const inputToken = swapDirection === 'clankerToWeth' ? POOL_KEY.currency0 : POOL_KEY.currency1
   const { data: erc20Allowance, refetch: refetchErc20Allowance } = useReadContract({
     address: inputToken,
     abi: ERC20_ABI,
@@ -326,7 +326,7 @@ export default function Home() {
     setSwapStep('swapping')
 
     const amountIn = parseEther(swapAmount)
-    const zeroForOne = swapDirection === 'wethToMolt'
+    const zeroForOne = swapDirection === 'clankerToWeth'
     const deadline = BigInt(Math.floor(Date.now() / 1000) + 1800)
 
     const { commands, inputs } = encodeV4Swap(POOL_KEY, zeroForOne, amountIn, 0n)
@@ -430,7 +430,7 @@ export default function Home() {
           </h1>
           <p className="text-secondary text-lg max-w-2xl leading-relaxed font-light">
             This hook demonstrates <span className="text-cyan">beforeSwap</span> with fee override.
-            Larger swaps pay proportionally higher fees (0.05% → 0.50%).
+            Optimized for micro-swaps with fees from 0.01% → 0.30%.
           </p>
         </div>
       </section>
@@ -451,16 +451,16 @@ export default function Home() {
                 <input
                   type="range"
                   min="0"
-                  max="2"
-                  step="0.001"
+                  max="0.01"
+                  step="0.00001"
                   value={swapAmount}
                   onChange={(e) => setSwapAmount(e.target.value)}
                   className="w-full mb-4"
                 />
                 <div className="flex justify-between text-sm font-mono">
                   <span className="text-dim">0 ETH</span>
-                  <span className="text-cyan text-2xl font-bold">{parseFloat(swapAmount).toFixed(4)} ETH</span>
-                  <span className="text-dim">2 ETH</span>
+                  <span className="text-cyan text-2xl font-bold">{parseFloat(swapAmount).toFixed(5)} ETH</span>
+                  <span className="text-dim">0.01 ETH</span>
                 </div>
               </div>
 
@@ -583,33 +583,33 @@ export default function Home() {
                 {/* Direction Toggle */}
                 <div className="flex gap-2">
                   <button
-                    onClick={() => setSwapDirection('wethToMolt')}
+                    onClick={() => setSwapDirection('clankerToWeth')}
                     disabled={isLoading}
                     className={`flex-1 py-3 px-4 rounded font-mono text-sm transition-all ${
-                      swapDirection === 'wethToMolt'
+                      swapDirection === 'clankerToWeth'
                         ? 'bg-cyan text-deep font-bold'
                         : 'bg-elevated text-secondary hover:text-primary'
                     }`}
                   >
-                    WETH → MOLT
+                    CLANKER → WETH
                   </button>
                   <button
-                    onClick={() => setSwapDirection('moltToWeth')}
+                    onClick={() => setSwapDirection('wethToClanker')}
                     disabled={isLoading}
                     className={`flex-1 py-3 px-4 rounded font-mono text-sm transition-all ${
-                      swapDirection === 'moltToWeth'
+                      swapDirection === 'wethToClanker'
                         ? 'bg-cyan text-deep font-bold'
                         : 'bg-elevated text-secondary hover:text-primary'
                     }`}
                   >
-                    MOLT → WETH
+                    WETH → CLANKER
                   </button>
                 </div>
 
                 {/* Amount Input */}
                 <div>
                   <label className="block text-secondary text-sm mb-2 font-mono">
-                    Amount ({swapDirection === 'wethToMolt' ? 'WETH' : 'MOLT'})
+                    Amount ({swapDirection === 'clankerToWeth' ? 'CLANKER' : 'WETH'})
                   </label>
                   <div className="flex gap-2">
                     <input
@@ -618,33 +618,37 @@ export default function Home() {
                       onChange={(e) => setSwapAmount(e.target.value)}
                       disabled={isLoading}
                       className="flex-1"
-                      placeholder="0.01"
+                      placeholder="0.0001"
                     />
                     <div className="flex gap-1">
-                      {swapDirection === 'wethToMolt' ? (
-                        <>
-                          <button onClick={() => setSwapAmount('0.005')} disabled={isLoading}
-                            className="px-3 py-2 bg-elevated rounded text-xs font-mono text-secondary hover:text-cyan">
-                            0.005
-                          </button>
-                          <button onClick={() => setSwapAmount('0.05')} disabled={isLoading}
-                            className="px-3 py-2 bg-elevated rounded text-xs font-mono text-secondary hover:text-cyan">
-                            0.05
-                          </button>
-                          <button onClick={() => setSwapAmount('0.5')} disabled={isLoading}
-                            className="px-3 py-2 bg-elevated rounded text-xs font-mono text-secondary hover:text-cyan">
-                            0.5
-                          </button>
-                        </>
-                      ) : (
+                      {swapDirection === 'clankerToWeth' ? (
                         <>
                           <button onClick={() => setSwapAmount('100')} disabled={isLoading}
                             className="px-3 py-2 bg-elevated rounded text-xs font-mono text-secondary hover:text-cyan">
                             100
                           </button>
+                          <button onClick={() => setSwapAmount('500')} disabled={isLoading}
+                            className="px-3 py-2 bg-elevated rounded text-xs font-mono text-secondary hover:text-cyan">
+                            500
+                          </button>
                           <button onClick={() => setSwapAmount('1000')} disabled={isLoading}
                             className="px-3 py-2 bg-elevated rounded text-xs font-mono text-secondary hover:text-cyan">
                             1000
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <button onClick={() => setSwapAmount('0.00005')} disabled={isLoading}
+                            className="px-3 py-2 bg-elevated rounded text-xs font-mono text-secondary hover:text-cyan">
+                            0.00005
+                          </button>
+                          <button onClick={() => setSwapAmount('0.0001')} disabled={isLoading}
+                            className="px-3 py-2 bg-elevated rounded text-xs font-mono text-secondary hover:text-cyan">
+                            0.0001
+                          </button>
+                          <button onClick={() => setSwapAmount('0.001')} disabled={isLoading}
+                            className="px-3 py-2 bg-elevated rounded text-xs font-mono text-secondary hover:text-cyan">
+                            0.001
                           </button>
                         </>
                       )}
@@ -706,7 +710,7 @@ export default function Home() {
               <div className="font-mono text-3xl text-cyan mb-4">02</div>
               <h3 className="font-mono font-bold mb-2">Calculate Fee</h3>
               <p className="text-secondary text-sm leading-relaxed">
-                We look at the swap size and determine which fee tier applies: 0.05%, 0.10%, 0.30%, or 0.50%.
+                We look at the swap size and determine which fee tier applies: 0.01%, 0.05%, 0.10%, or 0.30%.
               </p>
             </div>
             <div className="card">
@@ -729,10 +733,10 @@ export default function Home() {
             <div className="p-6 font-mono text-sm leading-relaxed overflow-x-auto">
               <div className="text-dim">{'/// @notice Calculate fee based on swap size'}</div>
               <div><span className="text-pink-400">function</span> <span className="text-green-400">_calculateFee</span>(uint256 size) <span className="text-pink-400">internal pure</span> {'{'}</div>
-              <div className="pl-4"><span className="text-pink-400">if</span> (size &lt; <span className="text-purple-400">0.01 ether</span>) <span className="text-pink-400">return</span> <span className="text-cyan">500</span>;  <span className="text-dim">// 0.05%</span></div>
-              <div className="pl-4"><span className="text-pink-400">if</span> (size &lt; <span className="text-purple-400">0.1 ether</span>) <span className="text-pink-400">return</span> <span className="text-cyan">1000</span>; <span className="text-dim">// 0.10%</span></div>
-              <div className="pl-4"><span className="text-pink-400">if</span> (size &lt; <span className="text-purple-400">1 ether</span>) <span className="text-pink-400">return</span> <span className="text-cyan">3000</span>; <span className="text-dim">// 0.30%</span></div>
-              <div className="pl-4"><span className="text-pink-400">return</span> <span className="text-cyan">5000</span>; <span className="text-dim">// 0.50%</span></div>
+              <div className="pl-4"><span className="text-pink-400">if</span> (size &lt; <span className="text-purple-400">0.0001 ether</span>) <span className="text-pink-400">return</span> <span className="text-cyan">100</span>;  <span className="text-dim">// 0.01%</span></div>
+              <div className="pl-4"><span className="text-pink-400">if</span> (size &lt; <span className="text-purple-400">0.001 ether</span>) <span className="text-pink-400">return</span> <span className="text-cyan">500</span>;  <span className="text-dim">// 0.05%</span></div>
+              <div className="pl-4"><span className="text-pink-400">if</span> (size &lt; <span className="text-purple-400">0.005 ether</span>) <span className="text-pink-400">return</span> <span className="text-cyan">1000</span>; <span className="text-dim">// 0.10%</span></div>
+              <div className="pl-4"><span className="text-pink-400">return</span> <span className="text-cyan">3000</span>; <span className="text-dim">// 0.30%</span></div>
               <div>{'}'}</div>
               <div className="mt-4 text-dim">{'/// @notice Return fee with override flag'}</div>
               <div><span className="text-pink-400">return</span> (selector, ZERO_DELTA, fee | <span className="text-cyan">OVERRIDE_FEE_FLAG</span>);</div>
